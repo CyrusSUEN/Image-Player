@@ -1,0 +1,5 @@
+.DS_Store
+bin/.DS_Store
+imagePlayer.xcodeproj/project.xcworkspace/xcuserdata/cyrussuen.xcuserdatad/UserInterfaceState.xcuserstate
+bin/imagePlayer.app
+bin/imagePlayerDebug.app
