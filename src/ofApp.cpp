@@ -50,7 +50,7 @@ void ofApp::setup() {
         meetsFPSrequirement.push(false);
     }
     
-    // environment variables; Do not modify
+    // internal variables; Do not modify
     frameIndex = -1;
     imagesIndex = 0;
     frameNum = -1 - startingBufferFrameNum;
@@ -150,6 +150,7 @@ void ofApp::keyPressed(int key){
     }
     if (key == 'f') {
         ofToggleFullscreen();
+        ofSetWindowTitle("Image Player");
     }
 }
 
