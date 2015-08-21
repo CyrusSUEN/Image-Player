@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxThreadedImageLoader.h"
+#include "ofxVideoRecorder.h"
 
 class ofApp : public ofBaseApp {
     
@@ -10,6 +11,7 @@ public:
     void setup();
     void update();
     void draw();
+    void exit();
     
     void keyPressed(int key);
     void keyReleased(int key);
@@ -39,4 +41,21 @@ public:
     
     // use threadedImageloader for improved loading performance
     ofxThreadedImageLoader loader;
+    
+    // for video recording
+    ofxVideoRecorder    vidRecorder;
+    ofSoundStream       soundStream;
+    void audioIn(float * input, int bufferSize, int nChannels);
+    bool bRecording;
+    int sampleRate;
+    int channels;
+    string fileName;
+    string fileExt;
+    
+    bool doLUT;
+    int dirLoadIndex;
+    bool LUTloaded;
+    ofVec3f lut[32][32][32];
+    void loadLUT(string path);
+    void applyLUT(ofPixelsRef pix);
 };

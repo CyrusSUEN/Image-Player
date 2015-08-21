@@ -9,6 +9,70 @@
 		<string>46</string>
 		<key>objects</key>
 		<dict>
+			<key>BB135DAC13404496A7B0FA44</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.c.h</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>ofxVideoRecorder.h</string>
+				<key>path</key>
+				<string>../../../addons/ofxVideoRecorder/src/ofxVideoRecorder.h</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>89A809C09132402F1523C1C7</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>883A95C78655CFEEA37EF9A1</string>
+					<string>BB135DAC13404496A7B0FA44</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>src</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>7652B9B7014C8450639DA55C</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>89A809C09132402F1523C1C7</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>ofxVideoRecorder</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>D50B3D9655F08D2B232C1C4D</key>
+			<dict>
+				<key>fileRef</key>
+				<string>883A95C78655CFEEA37EF9A1</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>883A95C78655CFEEA37EF9A1</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.cpp.cpp</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>ofxVideoRecorder.cpp</string>
+				<key>path</key>
+				<string>../../../addons/ofxVideoRecorder/src/ofxVideoRecorder.cpp</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
 			<key>258BD733949A19E1F0702FFA</key>
 			<dict>
 				<key>explicitFileType</key>
@@ -78,6 +142,7 @@
 				<key>children</key>
 				<array>
 					<string>3CD2B0AEE6FE628A91175CDA</string>
+					<string>7652B9B7014C8450639DA55C</string>
 				</array>
 				<key>isa</key>
 				<string>PBXGroup</string>
@@ -466,6 +531,8 @@
 						<string>$(OF_CORE_HEADERS)</string>
 						<string>../../../addons/ofxThreadedImageLoader/libs</string>
 						<string>../../../addons/ofxThreadedImageLoader/src</string>
+						<string>../../../addons/ofxVideoRecorder/libs</string>
+						<string>../../../addons/ofxVideoRecorder/src</string>
 					</array>
 					<key>ARCHS</key>
 					<string>$(NATIVE_ARCH)</string>
@@ -526,6 +593,8 @@
 						<string>$(OF_CORE_HEADERS)</string>
 						<string>../../../addons/ofxThreadedImageLoader/libs</string>
 						<string>../../../addons/ofxThreadedImageLoader/src</string>
+						<string>../../../addons/ofxVideoRecorder/libs</string>
+						<string>../../../addons/ofxVideoRecorder/src</string>
 					</array>
 					<key>ARCHS</key>
 					<string>$(NATIVE_ARCH)</string>
@@ -586,6 +655,7 @@
 					<string>E4B69E200A3A1BDC003C02F2</string>
 					<string>E4B69E210A3A1BDC003C02F2</string>
 					<string>EC26F225D807F4F069405924</string>
+					<string>D50B3D9655F08D2B232C1C4D</string>
 				</array>
 				<key>isa</key>
 				<string>PBXSourcesBuildPhase</string>
@@ -640,7 +710,7 @@
 				<key>isa</key>
 				<string>PBXNativeTarget</string>
 				<key>name</key>
-				<string>imagePlayer</string>
+				<string>imagePlayer_v2</string>
 				<key>productName</key>
 				<string>myOFApp</string>
 				<key>productReference</key>
@@ -657,7 +727,7 @@
 				<key>isa</key>
 				<string>PBXFileReference</string>
 				<key>path</key>
-				<string>imagePlayerDebug.app</string>
+				<string>imagePlayer_v2Debug.app</string>
 				<key>sourceTree</key>
 				<string>BUILT_PRODUCTS_DIR</string>
 			</dict>
