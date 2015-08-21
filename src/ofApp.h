@@ -37,10 +37,11 @@ public:
     
     ofDirectory dir;
     ofSoundPlayer vocal;
-    vector <ofImage> images;
     
     // use threadedImageloader for improved loading performance
     ofxThreadedImageLoader loader;
+    void dynamicLoading(int i);
+    ofImage imageBuffer;
     
     // for video recording
     ofxVideoRecorder    vidRecorder;

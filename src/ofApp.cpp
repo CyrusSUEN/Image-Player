@@ -29,17 +29,14 @@ void ofApp::setup() {
     dir.allowExt("jpg");
     int nFiles = dir.listDir("frames");
     if(nFiles) {
-        
-        images.resize(dir.numFiles());
-        
-        for(int i = 0; i < dir.numFiles(); i++) {
+        for(int i = 0; i < 1; i++) {
             
             // add the image to the vector
-            string filePath = dir.getPath(i);
+            string filePath = dir.getPath(0);
             
             // read the directory for the images
             // we know that they are named in seq
-            loader.loadFromDisk(images[i], filePath);
+            loader.loadFromDisk(imageBuffer, filePath);
             
             // images.push_back(ofImage());
             // images.back().loadImage(filePath);
@@ -97,10 +94,16 @@ void ofApp::exit() {
     vidRecorder.close();
 }
 
+void ofApp::dynamicLoading(int i) {
+    if (dir.listDir("frames")) {
+        loader.loadFromDisk(imageBuffer, dir.getPath(i));
+    }
+}
+
 //--------------------------------------------------------------
 void ofApp::update() {
     if(bRecording){ // && vidGrabber.isFrameNew()
-        vidRecorder.addFrame( images[frameIndex] );
+        vidRecorder.addFrame( imageBuffer );
     }
 }
 
@@ -108,7 +111,7 @@ void ofApp::update() {
 void ofApp::draw() {
     
     // we need some images if not return
-    if((int)images.size() <= 0) {
+    if((int)dir.size() <= 0) {
         ofSetColor(255);
         ofDrawBitmapString("No Images...", ofGetWidth()/2-30, ofGetHeight()/2);
         return;
@@ -126,8 +129,9 @@ void ofApp::draw() {
         
         if ( frameNum == ofToInt( dir.getName( imagesIndex ) ) ) {
             frameIndex = imagesIndex;
+            dynamicLoading(imagesIndex);
             imagesIndex++;
-            if (imagesIndex >= images.size()) {
+            if (imagesIndex >= dir.size()) {
                 if (endingLastingFrameNum)
                     frameNum = -endingLastingFrameNum - 1;
                 else
@@ -156,18 +160,18 @@ void ofApp::draw() {
         }
         
         if (!showDebuggingInfo) {
-            images[frameIndex].draw(0, 0);
+            imageBuffer.draw(0, 0);
         }
         else {
             // draw the image sequence at the new frame count
-            images[frameIndex].draw(256, 36);
+            imageBuffer.draw(256, 36);
             
             // how fast is the app running and some other info
             ofSetColor(50);
             ofRect(0, 0, 200, 75);
             ofSetColor(200);
             string info;
-            info += ofToString(frameIndex) + "/" + ofToString(images.size()-1) + " file index\n";
+            info += ofToString(frameIndex) + "/" + ofToString(dir.size()-1) + " file index\n";
             info += ofToString(appFPS)+"/"+ofToString(ofGetFrameRate(), 0)+" current fps\n";
             info += ofToString(sequenceFPS)+" target sequence fps\n\n";
             info += ofToString(vocal.getPosition() * 100)+"% audio position";
@@ -242,12 +246,12 @@ void ofApp::applyLUT(ofPixelsRef pix){
                     color[k]= (start[k] + amount * (end[k] - start[k])) * 255;
                 }
                 
-                images[frameIndex].setColor(x, y, color);
+                imageBuffer.setColor(x, y, color);
                 
             }			
         }
         
-        images[frameIndex].update();
+        imageBuffer.update();
     }
 }
 
