@@ -53,6 +53,7 @@ void ofApp::setup() {
     appFPS = 30;
     ofSetFrameRate(appFPS);
     
+    // TODO seems not working right now
     // number of frames spent when reached the ending image
     endingLastingFrameNum = 0;
     
