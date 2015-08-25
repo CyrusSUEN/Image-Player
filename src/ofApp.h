@@ -35,7 +35,7 @@ public:
     
     stack<bool> meetsFPSrequirement;
     
-    ofDirectory dir;
+    ofDirectory dirImg;
     ofSoundPlayer vocal;
     
     // use threadedImageloader for improved loading performance
@@ -44,6 +44,7 @@ public:
     ofImage imageBuffer;
     
     // for video recording
+    void setupVideoRecording();
     ofxVideoRecorder    vidRecorder;
     ofSoundStream       soundStream;
     void audioIn(float * input, int bufferSize, int nChannels);
@@ -53,6 +54,8 @@ public:
     string fileName;
     string fileExt;
     
+    void loadFilers();
+    ofDirectory dirLut;
     bool doLUT;
     int dirLoadIndex;
     bool LUTloaded;

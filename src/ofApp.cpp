@@ -10,39 +10,9 @@ void ofApp::setup() {
     
     vocal.loadSound("sound/audio.mp3");
     
-    ofSetColor(0);
-    
-    /*
-    // load filters
-    dir.allowExt("cube");
-    dir.listDir("LUTs/");
-    dir.sort();
-    if (dir.size()>0) {
-        dirLoadIndex=0;
-        // loadLUT(dir.getPath(dirLoadIndex));
-        doLUT = true;
-    }else{
-        doLUT = false;
-    }
-    */
-    
-    dir.allowExt("jpg");
-    int nFiles = dir.listDir("frames");
-    if(nFiles) {
-        for(int i = 0; i < 1; i++) {
-            
-            // add the image to the vector
-            string filePath = dir.getPath(0);
-            
-            // read the directory for the images
-            // we know that they are named in seq
-            loader.loadFromDisk(imageBuffer, filePath);
-            
-            // images.push_back(ofImage());
-            // images.back().loadImage(filePath);
-        }
-    }
-    else printf("Could not find folder\n");
+    dirImg.allowExt("jpg");
+    // load the first image
+    dynamicLoading(0);
     
     showDebuggingInfo = false;
     startPlayback = true;
@@ -72,6 +42,14 @@ void ofApp::setup() {
     frameNum = -1 - startingBufferFrameNum;
     
     // set up video recording
+    setupVideoRecording();
+}
+
+void ofApp::exit() {
+    vidRecorder.close();
+}
+
+void ofApp::setupVideoRecording() {
     fileName = "";
     fileExt = ".mov"; // ffmpeg uses the extension to determine the container type. run 'ffmpeg -formats' to see supported formats
     
@@ -87,17 +65,27 @@ void ofApp::setup() {
     sampleRate = 44100;
     channels = 2;
     soundStream.setup(this, 0, channels, sampleRate, 256, 4);
-
+    
     vidRecorder.setup(fileName+ofGetTimestampString()+fileExt, 1920, 1080, appFPS, sampleRate, channels);
 }
 
-void ofApp::exit() {
-    vidRecorder.close();
+void ofApp::dynamicLoading(int i) {
+    if (dirImg.listDir("frames") > i) {
+        loader.loadFromDisk(imageBuffer, dirImg.getPath(i));
+    }
 }
 
-void ofApp::dynamicLoading(int i) {
-    if (dir.listDir("frames")) {
-        loader.loadFromDisk(imageBuffer, dir.getPath(i));
+void ofApp::loadFilers() {
+    // load filters
+    dirLut.allowExt("cube");
+    dirLut.listDir("LUTs/");
+    dirLut.sort();
+    if (dirLut.size() > 0) {
+        dirLoadIndex = 0;
+        loadLUT(dirLut.getPath(dirLoadIndex));
+        doLUT = true;
+    }else{
+        doLUT = false;
     }
 }
 
@@ -112,7 +100,7 @@ void ofApp::update() {
 void ofApp::draw() {
     
     // we need some images if not return
-    if((int)dir.size() <= 0) {
+    if((int)dirImg.size() <= 0) {
         ofSetColor(255);
         ofDrawBitmapString("No Images...", ofGetWidth()/2-30, ofGetHeight()/2);
         return;
@@ -128,11 +116,11 @@ void ofApp::draw() {
         // every draw() call means ofGetFrameNum() is increased by 1
         frameNum++; // = ofGetFrameNum();
         
-        if ( frameNum == ofToInt( dir.getName( imagesIndex ) ) ) {
+        if ( frameNum == ofToInt( dirImg.getName( imagesIndex ) ) ) {
             frameIndex = imagesIndex;
             dynamicLoading(imagesIndex);
             imagesIndex++;
-            if (imagesIndex >= dir.size()) {
+            if (imagesIndex >= dirImg.size()) {
                 if (endingLastingFrameNum)
                     frameNum = -endingLastingFrameNum - 1;
                 else
@@ -172,7 +160,7 @@ void ofApp::draw() {
             ofRect(0, 0, 200, 75);
             ofSetColor(200);
             string info;
-            info += ofToString(frameIndex) + "/" + ofToString(dir.size()-1) + " file index\n";
+            info += ofToString(frameIndex) + "/" + ofToString(dirImg.size()-1) + " file index\n";
             info += ofToString(appFPS)+"/"+ofToString(ofGetFrameRate(), 0)+" current fps\n";
             info += ofToString(sequenceFPS)+" target sequence fps\n\n";
             info += ofToString(vocal.getPosition() * 100)+"% audio position";
@@ -201,7 +189,7 @@ void ofApp::audioIn(float *input, int bufferSize, int nChannels){
 
 //--------------------------------------------------------------
 void ofApp::loadLUT(string path){
-    LUTloaded=false;
+    LUTloaded = false;
     
     ofFile file(path);
     string line;
@@ -248,7 +236,6 @@ void ofApp::applyLUT(ofPixelsRef pix){
                 }
                 
                 imageBuffer.setColor(x, y, color);
-                
             }			
         }
         
@@ -281,17 +268,17 @@ void ofApp::keyPressed(int key){
     }
     if (key == OF_KEY_UP){
         dirLoadIndex++;
-        if (dirLoadIndex>=(int)dir.size()) {
-            dirLoadIndex=0;
+        if (dirLoadIndex >= (int)dirLut.size()) {
+            dirLoadIndex = 0;
         }
-        loadLUT(dir.getPath(dirLoadIndex));
+        loadLUT(dirLut.getPath(dirLoadIndex));
     }
     if (key == OF_KEY_DOWN) {
         dirLoadIndex--;
-        if (dirLoadIndex<0) {
-            dirLoadIndex=dir.size()-1;
+        if (dirLoadIndex < 0) {
+            dirLoadIndex = dirLut.size()-1;
         }
-        loadLUT(dir.getPath(dirLoadIndex));
+        loadLUT(dirLut.getPath(dirLoadIndex));
     }
 }
 
