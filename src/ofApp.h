@@ -3,6 +3,9 @@
 #include "ofMain.h"
 #include "ofxThreadedImageLoader.h"
 #include "ofxVideoRecorder.h"
+#include "ofxJSON.h"
+#include <time.h>
+#include <iomanip>
 
 class ofApp : public ofBaseApp {
     
@@ -54,6 +57,7 @@ public:
     string fileName;
     string fileExt;
     
+    // image filters
     void loadFilers();
     ofDirectory dirLut;
     bool doLUT;
@@ -62,4 +66,9 @@ public:
     ofVec3f lut[32][32][32];
     void loadLUT(string path);
     void applyLUT(ofPixelsRef pix);
+    
+    // json
+    ofxJSONElement json;
+    void displaySubtitle(int imagesIndex, int frameNum);
+    void convertElapsedTime(string s);
 };

@@ -1,2 +1,3 @@
 ofxThreadedImageLoader
+ofxJSON
 ofxVideoRecorder

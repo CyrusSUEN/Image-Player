@@ -8,11 +8,16 @@ void ofApp::setup() {
     ofBackground(0);
     ofSetWindowTitle("Image Player");
     
+    // load sound
     vocal.loadSound("sound/audio.mp3");
     
     dirImg.allowExt("jpg");
     // load the first image
     dynamicLoading(0);
+    
+    // load JSON
+    if (json.open("phraseCounts.json"))
+        ofLogNotice("ofApp::setup") << json.getRawString();
     
     showDebuggingInfo = false;
     startPlayback = true;
@@ -43,6 +48,7 @@ void ofApp::setup() {
     
     // set up video recording
     setupVideoRecording();
+    
 }
 
 void ofApp::exit() {
@@ -87,6 +93,51 @@ void ofApp::loadFilers() {
     }else{
         doLUT = false;
     }
+}
+
+void ofApp::displaySubtitle(int imagesIndex, int frameNum) {
+    static int frameCount = 0;
+    static int frameLasts = 0;
+    static int playedImagesIndex = -1;
+    
+    stringstream ss;
+    
+    if (frameCount == 0 && playedImagesIndex < imagesIndex) {
+        if (json[imagesIndex]["index"] == imagesIndex) {
+            frameLasts = json[imagesIndex]["frames"].asInt();
+        }
+    }
+    
+    if (frameCount < frameLasts && playedImagesIndex < imagesIndex) {
+        ofDrawBitmapString(json[imagesIndex]["text"].asString(), 15, 20);
+        frameCount++;
+        
+        time_t seconds(ofGetElapsedTimef()); // you have to convert your input_seconds into time_t
+        tm *p = gmtime(&seconds); // convert to broken down time
+        
+        
+        ss << setfill('0') << setw(2) << p->tm_hour << ":"
+        << setw(2) << p->tm_min << ":" << setw(2) << p->tm_sec
+        << "," << setw(3) << ofGetElapsedTimeMillis()%1000;
+        
+        // ofLogNotice("Subtitle: ") << "Hello";
+    }
+    else {
+        frameCount = 0;
+        frameLasts = 0;
+        playedImagesIndex++;
+    }
+    
+}
+
+void ofApp::convertElapsedTime(string s) {
+    time_t seconds(1641); // you have to convert your input_seconds into time_t
+    tm *p = gmtime(&seconds); // convert to broken down time
+    
+    cout << "days = " << p->tm_yday << endl;
+    cout << "hours = " << p->tm_hour << endl;
+    cout << "minutes = " << p->tm_min  << endl;
+    cout << "seconds = " << p->tm_sec << endl;
 }
 
 //--------------------------------------------------------------
@@ -150,6 +201,7 @@ void ofApp::draw() {
         
         if (!showDebuggingInfo) {
             imageBuffer.draw(0, 0);
+            displaySubtitle(imagesIndex - 1, frameNum);
         }
         else {
             // draw the image sequence at the new frame count
