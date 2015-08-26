@@ -6,6 +6,7 @@
 #include "ofxJSON.h"
 #include <time.h>
 #include <iomanip>
+#include <fstream>
 
 class ofApp : public ofBaseApp {
     
@@ -51,7 +52,7 @@ public:
     ofxVideoRecorder    vidRecorder;
     ofSoundStream       soundStream;
     void audioIn(float * input, int bufferSize, int nChannels);
-    bool bRecording;
+    bool bRecording = false;
     int sampleRate;
     int channels;
     string fileName;
@@ -70,5 +71,6 @@ public:
     // json
     ofxJSONElement json;
     void displaySubtitle(int imagesIndex, int frameNum);
-    void convertElapsedTime(string s);
+    void getElapsedTime(stringstream& s, float offsetF, float offsetM);
+    void writeSrtFile(const stringstream& ss);
 };

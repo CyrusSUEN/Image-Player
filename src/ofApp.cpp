@@ -17,7 +17,7 @@ void ofApp::setup() {
     
     // load JSON
     if (json.open("phraseCounts.json"))
-        ofLogNotice("ofApp::setup") << json.getRawString();
+        ; // ofLogNotice("ofApp::setup") << json.getRawString();
     
     showDebuggingInfo = false;
     startPlayback = true;
@@ -48,7 +48,6 @@ void ofApp::setup() {
     
     // set up video recording
     setupVideoRecording();
-    
 }
 
 void ofApp::exit() {
@@ -100,44 +99,86 @@ void ofApp::displaySubtitle(int imagesIndex, int frameNum) {
     static int frameLasts = 0;
     static int playedImagesIndex = -1;
     
-    stringstream ss;
+    static stringstream ss;
+    static float offsetF;
+    static float offsetM;
     
-    if (frameCount == 0 && playedImagesIndex < imagesIndex) {
-        if (json[imagesIndex]["index"] == imagesIndex) {
-            frameLasts = json[imagesIndex]["frames"].asInt();
-        }
+    if (playedImagesIndex == -1 && frameCount == 0 && frameLasts == 0) {
+        offsetF = ofGetElapsedTimef();
+        offsetM = ofGetElapsedTimeMillis();
     }
     
-    if (frameCount < frameLasts && playedImagesIndex < imagesIndex) {
-        ofDrawBitmapString(json[imagesIndex]["text"].asString(), 15, 20);
-        frameCount++;
-        
-        time_t seconds(ofGetElapsedTimef()); // you have to convert your input_seconds into time_t
-        tm *p = gmtime(&seconds); // convert to broken down time
-        
-        
-        ss << setfill('0') << setw(2) << p->tm_hour << ":"
-        << setw(2) << p->tm_min << ":" << setw(2) << p->tm_sec
-        << "," << setw(3) << ofGetElapsedTimeMillis()%1000;
-        
-        // ofLogNotice("Subtitle: ") << "Hello";
-    }
-    else {
+    if (imagesIndex > playedImagesIndex + 1) {
         frameCount = 0;
         frameLasts = 0;
         playedImagesIndex++;
+        
+        {
+            ss << " --> ";
+            getElapsedTime(ss, offsetF, offsetM);
+            ss << endl << json[playedImagesIndex]["text"].asString() << endl << endl;
+            
+            // ofLogNotice("Subtitle") << ss.str();
+            
+            writeSrtFile(ss);
+            
+            // ss.str(""); // clear the content
+        }
     }
     
+    if (playedImagesIndex < imagesIndex) {
+        if (frameCount == 0) {
+            if (json[imagesIndex]["index"] == imagesIndex) {
+                frameLasts = json[imagesIndex]["frames"].asInt();
+                
+                {
+                    ss << imagesIndex + 1 << endl;
+                    getElapsedTime(ss, offsetF, offsetM);
+                }
+
+            }
+        }
+        
+        if (frameCount <= frameLasts) {
+            ofDrawBitmapString(json[imagesIndex]["text"].asString(), 15, 20);
+            frameCount++;
+        }
+        else {
+            frameCount = 0;
+            frameLasts = 0;
+            playedImagesIndex++;
+            
+            {
+                ss << " --> ";
+                getElapsedTime(ss, offsetF, offsetM);
+                ss << endl << json[playedImagesIndex]["text"].asString() << endl << endl;
+                
+                ofLogNotice("Subtitle") << ss.str();
+                
+                writeSrtFile(ss);
+                
+                // ss.str(""); // clear the content
+            }
+        }
+    }
 }
 
-void ofApp::convertElapsedTime(string s) {
-    time_t seconds(1641); // you have to convert your input_seconds into time_t
+void ofApp::getElapsedTime(stringstream& ss, float offsetF, float offsetM) {
+    time_t seconds(ofGetElapsedTimef() - offsetF); // convert ofGetElapsedTimef into time_t
     tm *p = gmtime(&seconds); // convert to broken down time
     
-    cout << "days = " << p->tm_yday << endl;
-    cout << "hours = " << p->tm_hour << endl;
-    cout << "minutes = " << p->tm_min  << endl;
-    cout << "seconds = " << p->tm_sec << endl;
+    unsigned long long timeMillis = ofGetElapsedTimeMillis() - offsetM;
+    
+    ss << setfill('0') << setw(2) << p->tm_hour << ":"
+    << setw(2) << p->tm_min << ":" << setw(2) << p->tm_sec
+    << "," << setw(3) << timeMillis%1000;
+}
+
+void ofApp::writeSrtFile(const stringstream& ss) {
+    ofstream fout;
+    fout.open(ofToDataPath("a.srt").c_str());
+    fout << ss.str();
+    fout.close();
 }
 
 //--------------------------------------------------------------
@@ -170,7 +211,9 @@ void ofApp::draw() {
         if ( frameNum == ofToInt( dirImg.getName( imagesIndex ) ) ) {
             frameIndex = imagesIndex;
             dynamicLoading(imagesIndex);
+            
             imagesIndex++;
+            
             if (imagesIndex >= dirImg.size()) {
                 if (endingLastingFrameNum)
                     frameNum = -endingLastingFrameNum - 1;
