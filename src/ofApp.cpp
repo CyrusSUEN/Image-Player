@@ -13,7 +13,7 @@ void ofApp::setup() {
     
     dirImg.allowExt("jpg");
     imageFolder = "frames_";
-    imageFolder += "dry";
+    imageFolder += "abstract";
     // load the first image
     dynamicLoading(0);
     
@@ -108,6 +108,9 @@ void ofApp::displaySubtitle(int imagesIndex, int frameNum) {
     if (playedImagesIndex == -1 && frameCount == 0 && frameLasts == 0) {
         offsetF = ofGetElapsedTimef();
         offsetM = ofGetElapsedTimeMillis();
+        
+        // reset srt file content
+        writeSrtFile(ss, true);
     }
     
     // case: imagesIndex++ but frameLasts not reached
@@ -177,9 +180,17 @@ void ofApp::getElapsedTime(stringstream& ss, float offsetF, float offsetM) {
     << "," << setw(3) << timeMillis%1000;
 }
 
-void ofApp::writeSrtFile(const stringstream& ss) {
+void ofApp::writeSrtFile(const stringstream& ss, bool init) {
+    
+    if (init) {
+        ofstream ofs;
+        ofs.open(ofToDataPath(imageFolder + ".srt").c_str(), ofstream::out | ofstream::trunc);
+        ofs.close();
+    }
+    
     ofstream fout;
-    fout.open(ofToDataPath("a.srt").c_str());
+    fout.open(ofToDataPath(imageFolder + ".srt").c_str());
+    
     fout << ss.str();
     fout.close();
 }

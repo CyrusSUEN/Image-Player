@@ -73,5 +73,5 @@ public:
     ofxJSONElement json;
     void displaySubtitle(int imagesIndex, int frameNum);
     void getElapsedTime(stringstream& s, float offsetF, float offsetM);
-    void writeSrtFile(const stringstream& ss);
+    void writeSrtFile(const stringstream& ss, bool init = false);
 };
