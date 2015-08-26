@@ -108,6 +108,7 @@ void ofApp::displaySubtitle(int imagesIndex, int frameNum) {
         offsetM = ofGetElapsedTimeMillis();
     }
     
+    // case: imagesIndex++ but frameLasts not reached
     if (imagesIndex > playedImagesIndex + 1) {
         frameCount = 0;
         frameLasts = 0;
@@ -213,17 +214,6 @@ void ofApp::draw() {
             dynamicLoading(imagesIndex);
             
             imagesIndex++;
-            
-            if (imagesIndex >= dirImg.size()) {
-                if (endingLastingFrameNum)
-                    frameNum = -endingLastingFrameNum - 1;
-                else
-                    frameNum = -1;
-                imagesIndex = 0;
-                vocal.stop();
-                vidRecorder.close();
-                startPlayback = false;
-            }
         }
         
         if (frameIndex < 0) {
@@ -261,6 +251,18 @@ void ofApp::draw() {
             info += ofToString(vocal.getPosition() * 100)+"% audio position";
             
             ofDrawBitmapString(info, 15, 20);
+        }
+        
+        // update environment variables
+        if (imagesIndex >= dirImg.size()) {
+            if (endingLastingFrameNum)
+                frameNum = -endingLastingFrameNum - 1;
+            else
+                frameNum = -1;
+            imagesIndex = 0;
+            vocal.stop();
+            vidRecorder.close();
+            startPlayback = false;
         }
     }
     else if (!startPlayback && meetsFPSrequirement.empty()) {
