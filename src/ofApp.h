@@ -46,6 +46,7 @@ public:
     ofxThreadedImageLoader loader;
     void dynamicLoading(int i);
     ofImage imageBuffer;
+    string imageFolder;
     
     // for video recording
     void setupVideoRecording();

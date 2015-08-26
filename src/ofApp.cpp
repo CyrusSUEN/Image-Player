@@ -12,6 +12,8 @@ void ofApp::setup() {
     vocal.loadSound("sound/audio.mp3");
     
     dirImg.allowExt("jpg");
+    imageFolder = "frames_";
+    imageFolder += "dry";
     // load the first image
     dynamicLoading(0);
     
@@ -55,7 +57,7 @@ void ofApp::exit() {
 }
 
 void ofApp::setupVideoRecording() {
-    fileName = "";
+    fileName = imageFolder;
     fileExt = ".mov"; // ffmpeg uses the extension to determine the container type. run 'ffmpeg -formats' to see supported formats
     
     // override the default codecs if you like
@@ -71,11 +73,11 @@ void ofApp::setupVideoRecording() {
     channels = 2;
     soundStream.setup(this, 0, channels, sampleRate, 256, 4);
     
-    vidRecorder.setup(fileName+ofGetTimestampString()+fileExt, 1920, 1080, appFPS, sampleRate, channels);
+    vidRecorder.setup(fileName+"-"+ofGetTimestampString()+fileExt, 1920, 1080, appFPS, sampleRate, channels);
 }
 
 void ofApp::dynamicLoading(int i) {
-    if (dirImg.listDir("frames") > i) {
+    if (dirImg.listDir(imageFolder) > i) {
         loader.loadFromDisk(imageBuffer, dirImg.getPath(i));
     }
 }
