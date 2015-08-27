@@ -100,6 +100,7 @@ void ofApp::displaySubtitle(int frameNum, int x, int y) {
     static int frameCount = 0;
     static int frameLasts = 0;
     static int playedImagesIndex = -1;
+    static string subtitle = "";
     
     static stringstream ss;
     static int srtIndex = 0;
@@ -110,7 +111,7 @@ void ofApp::displaySubtitle(int frameNum, int x, int y) {
     static bool isStarted = false;
     
     // start displaying subtitle
-    if (frameNum == 0) {
+    if (!isStarted && frameNum == 0) {
         isStarted = true;
         
         // resetting static function variables
@@ -129,13 +130,11 @@ void ofApp::displaySubtitle(int frameNum, int x, int y) {
         {
             ss << " --> ";
             getElapsedTime(ss, offsetF, offsetM);
-            ss << endl << json[index]["text"].asString() << endl << endl;
-            
-            // ofLogNotice("Subtitle") << ss.str();
+            ss << endl << subtitle << endl << endl;
             
             writeSrtFile(ss);
             
-            // ss.str(""); // clear the content
+            ss.str(""); // clear the content
         }
         
         frameCount = 0;
@@ -146,15 +145,24 @@ void ofApp::displaySubtitle(int frameNum, int x, int y) {
     if (isStarted) {
          // frame 0 starting to display subtitle
         if (frameCount == 0 && frameLasts == 0) {
+            // terminate the subtitle function if index out of bound
+            if (index >= json.size()) {
+                isStarted = false;
+            }
+            
+            subtitle = json[index]["text"].asString();
+            
             // check if this should be skipped
-            while (json[index]["text"].asString().find_first_of(" ") == string::npos) {
+            while (isStarted && subtitle.find_first_of(" ") == string::npos) {
                 index++;
-                ofLogNotice("displaySubtitle") << index;
+                ofLogNotice("displaySubtitle skippable caption found") << index;
                 
+                // terminate the subtitle function if index out of bound
                 if (index >= json.size()) {
                     isStarted = false;
-                    break;
                 }
+                else
+                    subtitle = json[index]["text"].asString();
             }
             
             frameLasts = json[index]["frames"].asInt();
@@ -167,7 +175,7 @@ void ofApp::displaySubtitle(int frameNum, int x, int y) {
         // continue to display subtitle
         if (frameCount < frameLasts) { // draw subtitle
             frameCount++;
-            ofDrawBitmapString(json[index]["text"].asString(), x, y);
+            ofDrawBitmapString(subtitle, x, y);
         }
     }
     
@@ -178,7 +186,6 @@ void ofApp::displaySubtitle(int frameNum, int x, int y) {
         info += ofToString(frameLasts) + " frameLasts\n";
         
         ofDrawBitmapString(info, 15, 180);
-
     }
 }
 
@@ -196,14 +203,14 @@ void ofApp::getElapsedTime(stringstream& ss, float offsetF, float offsetM) {
 void ofApp::writeSrtFile(const stringstream& ss, bool init) {
     
     if (init) {
-        ofstream ofs;
-        ofs.open(ofToDataPath(imageFolder + ".srt").c_str(), ofstream::out | ofstream::trunc);
-        ofs.close();
+        ofstream fout;
+        fout.open(ofToDataPath(imageFolder + ".srt").c_str(), ofstream::out | ofstream::trunc);
+        fout.close();
     }
     else {
         ofstream fout;
         fout.open(ofToDataPath(imageFolder + ".srt").c_str());
-        
+        fout.seekp(0, ios::end); // start writing at the end
         fout << ss.str();
         fout.close();
     }
