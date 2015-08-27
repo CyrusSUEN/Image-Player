@@ -21,7 +21,7 @@ void ofApp::setup() {
     if (json.open("phraseCounts.json"))
         ; // ofLogNotice("ofApp::setup") << json.getRawString();
     
-    showDebuggingInfo = false;
+    showDebuggingInfo = true;
     startPlayback = true;
     
     sequenceFPS = 30;
@@ -96,33 +96,40 @@ void ofApp::loadFilers() {
     }
 }
 
-void ofApp::displaySubtitle(int imagesIndex, int frameNum) {
+void ofApp::displaySubtitle(int frameNum, int x, int y) {
     static int frameCount = 0;
     static int frameLasts = 0;
     static int playedImagesIndex = -1;
     
     static stringstream ss;
-    static float offsetF;
-    static float offsetM;
+    static int srtIndex = 0;
+    static float offsetF = 0;
+    static float offsetM = 0;
     
-    if (playedImagesIndex == -1 && frameCount == 0 && frameLasts == 0) {
+    static int index = 0;
+    static bool isStarted = false;
+    
+    // start displaying subtitle
+    if (frameNum == 0) {
+        isStarted = true;
+        
+        // resetting static function variables
+        frameCount = 0;
+        frameLasts = 0;
+        index = 0;
+        srtIndex = 0;
         offsetF = ofGetElapsedTimef();
         offsetM = ofGetElapsedTimeMillis();
         
         // reset srt file content
         writeSrtFile(ss, true);
     }
-    
-    // case: imagesIndex++ but frameLasts not reached
-    if (imagesIndex > playedImagesIndex + 1) {
-        frameCount = 0;
-        frameLasts = 0;
-        playedImagesIndex++;
-        
+    // case: increase index
+    else if (isStarted && frameLasts != 0 && frameCount == frameLasts) {
         {
             ss << " --> ";
             getElapsedTime(ss, offsetF, offsetM);
-            ss << endl << json[playedImagesIndex]["text"].asString() << endl << endl;
+            ss << endl << json[index]["text"].asString() << endl << endl;
             
             // ofLogNotice("Subtitle") << ss.str();
             
@@ -130,42 +137,48 @@ void ofApp::displaySubtitle(int imagesIndex, int frameNum) {
             
             // ss.str(""); // clear the content
         }
+        
+        frameCount = 0;
+        frameLasts = 0;
+        index++;
     }
     
-    if (playedImagesIndex < imagesIndex) {
-        if (frameCount == 0) {
-            if (json[imagesIndex]["index"] == imagesIndex) {
-                frameLasts = json[imagesIndex]["frames"].asInt();
+    if (isStarted) {
+         // frame 0 starting to display subtitle
+        if (frameCount == 0 && frameLasts == 0) {
+            // check if this should be skipped
+            while (json[index]["text"].asString().find_first_of(" ") == string::npos) {
+                index++;
+                ofLogNotice("displaySubtitle") << index;
                 
-                {
-                    ss << imagesIndex + 1 << endl;
-                    getElapsedTime(ss, offsetF, offsetM);
+                if (index >= json.size()) {
+                    isStarted = false;
+                    break;
                 }
-
             }
-        }
-        
-        if (frameCount <= frameLasts) {
-            ofDrawBitmapString(json[imagesIndex]["text"].asString(), 15, 20);
-            frameCount++;
-        }
-        else {
-            frameCount = 0;
-            frameLasts = 0;
-            playedImagesIndex++;
+            
+            frameLasts = json[index]["frames"].asInt();
             
             {
-                ss << " --> ";
+                ss << ++srtIndex << endl;
                 getElapsedTime(ss, offsetF, offsetM);
-                ss << endl << json[playedImagesIndex]["text"].asString() << endl << endl;
-                
-                ofLogNotice("Subtitle") << ss.str();
-                
-                writeSrtFile(ss);
-                
-                // ss.str(""); // clear the content
             }
         }
+        // continue to display subtitle
+        if (frameCount < frameLasts) { // draw subtitle
+            frameCount++;
+            ofDrawBitmapString(json[index]["text"].asString(), x, y);
+        }
+    }
+    
+    if (showDebuggingInfo) {
+        string info;
+        
+        info += ofToString(frameCount) + " frameCount\n";
+        info += ofToString(frameLasts) + " frameLasts\n";
+        
+        ofDrawBitmapString(info, 15, 180);
+
     }
 }
 
@@ -187,12 +200,13 @@ void ofApp::writeSrtFile(const stringstream& ss, bool init) {
         ofs.open(ofToDataPath(imageFolder + ".srt").c_str(), ofstream::out | ofstream::trunc);
         ofs.close();
     }
-    
-    ofstream fout;
-    fout.open(ofToDataPath(imageFolder + ".srt").c_str());
-    
-    fout << ss.str();
-    fout.close();
+    else {
+        ofstream fout;
+        fout.open(ofToDataPath(imageFolder + ".srt").c_str());
+        
+        fout << ss.str();
+        fout.close();
+    }
 }
 
 //--------------------------------------------------------------
@@ -247,11 +261,12 @@ void ofApp::draw() {
         
         if (!showDebuggingInfo) {
             imageBuffer.draw(0, 0);
-            displaySubtitle(imagesIndex - 1, frameNum);
+            displaySubtitle(frameNum, 15, 20);
         }
         else {
             // draw the image sequence at the new frame count
             imageBuffer.draw(256, 36);
+            displaySubtitle(frameNum, 15, 200);
             
             // how fast is the app running and some other info
             ofSetColor(50);
@@ -261,7 +276,8 @@ void ofApp::draw() {
             info += ofToString(frameIndex) + "/" + ofToString(dirImg.size()-1) + " file index\n";
             info += ofToString(appFPS)+"/"+ofToString(ofGetFrameRate(), 0)+" current fps\n";
             info += ofToString(sequenceFPS)+" target sequence fps\n\n";
-            info += ofToString(vocal.getPosition() * 100)+"% audio position";
+            info += ofToString(vocal.getPosition() * 100)+"% audio position\n";
+            info += ofToString(frameNum) + " frame number\n";
             
             ofDrawBitmapString(info, 15, 20);
         }
