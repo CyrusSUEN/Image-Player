@@ -68,6 +68,7 @@ public:
     ofVec3f lut[32][32][32];
     void loadLUT(string path);
     void applyLUT(ofPixelsRef pix);
+    void applyFilter();
     
     // json
     ofxJSONElement json;

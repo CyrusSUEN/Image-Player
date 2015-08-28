@@ -21,7 +21,7 @@ void ofApp::setup() {
     if (json.open("phraseCounts.json"))
         ; // ofLogNotice("ofApp::setup") << json.getRawString();
     
-    showDebuggingInfo = true;
+    showDebuggingInfo = false;
     startPlayback = true;
     
     sequenceFPS = 30;
@@ -78,8 +78,10 @@ void ofApp::setupVideoRecording() {
 
 void ofApp::dynamicLoading(int i) {
     if (dirImg.listDir(imageFolder) > i) {
-        loader.loadFromDisk(imageBuffer, dirImg.getPath(i));
+        //loader.loadFromDisk(imageBuffer, dirImg.getPath(i));
+        imageBuffer.loadImage(dirImg.getPath(i));
     }
+    
 }
 
 void ofApp::loadFilers() {
@@ -203,6 +205,8 @@ void ofApp::getElapsedTime(stringstream& ss, float offsetF, float offsetM) {
 void ofApp::writeSrtFile(const stringstream& ss, bool init) {
     
     if (init) {
+        
+        cout << "Rewrite srt file" << endl;
         ofstream fout;
         fout.open(ofToDataPath(imageFolder + ".srt").c_str(), ofstream::out | ofstream::trunc);
         fout.close();
@@ -214,6 +218,42 @@ void ofApp::writeSrtFile(const stringstream& ss, bool init) {
         fout << ss.str();
         fout.close();
     }
+}
+
+void ofApp::applyFilter() {
+    int w = imageBuffer.getWidth();
+    int h = imageBuffer.getHeight();
+    
+    int channelCount = imageBuffer.getPixelsRef().getNumChannels();
+    
+    for (int y = 0; y < h; y++) {
+        
+        unsigned char * cursor = imageBuffer.getPixels() + ((w * channelCount) * y);
+        
+        for (int x = 0; x < w - 1; x++) {
+            
+            double tintPercentage = .25;
+            ofColor filterColor = ofColor::green;
+            
+            // cout << "Before: " << cursor[0] << " " << cursor[1] << " " << cursor[2] << endl;
+            
+            int a0 = cursor[0];
+            int a1 = cursor[1];
+            int a2 = cursor[2];
+            
+            cursor[0] = cursor[0] + (tintPercentage * (filterColor.r - cursor[0]));
+            cursor[1] = cursor[1] + (tintPercentage * (filterColor.g - cursor[1]));
+            cursor[2] = cursor[2] + (tintPercentage * (filterColor.b - cursor[2]));
+            
+            // cout << "After: " << cursor[0] << " " << cursor[1] << " " << cursor[2] << endl;
+            
+            int b0 = cursor[0];
+            int b1 = cursor[1];
+            int b2 = cursor[2];
+            cursor += channelCount;
+        }
+    }
+    imageBuffer.update();
 }
 
 //--------------------------------------------------------------
@@ -246,7 +286,7 @@ void ofApp::draw() {
         if ( frameNum == ofToInt( dirImg.getName( imagesIndex ) ) ) {
             frameIndex = imagesIndex;
             dynamicLoading(imagesIndex);
-            
+            applyFilter();
             imagesIndex++;
         }
         
