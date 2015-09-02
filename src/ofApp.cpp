@@ -14,8 +14,18 @@ void ofApp::setup() {
     dirImg.allowExt("jpg");
     imageFolder = "frames_";
     imageFolder += "abstract";
-    // load the first image
-    dynamicLoading(0);
+    
+    // load images
+    bufferSize = 5;
+    numImages = dirImg.listDir(imageFolder);
+    if (numImages > bufferSize)
+        images.resize(bufferSize);
+    else
+        images.resize(numImages);
+    
+    for (int i = 0; i < images.size(); i++) {
+        imageLoading(i, true);
+    }
     
     // load JSON
     if (json.open("phraseCounts.json"))
@@ -76,10 +86,17 @@ void ofApp::setupVideoRecording() {
     vidRecorder.setup(fileName+"-"+ofGetTimestampString()+fileExt, 1920, 1080, appFPS, sampleRate, channels);
 }
 
-void ofApp::dynamicLoading(int i) {
-    if (dirImg.listDir(imageFolder) > i) {
-        //loader.loadFromDisk(imageBuffer, dirImg.getPath(i));
-        imageBuffer.loadImage(dirImg.getPath(i));
+void ofApp::imageLoading(int i, bool init) {
+    
+    imageBuffer = images[(i) % bufferSize];
+    
+    int dirIndex = 0;
+    if (!init)
+        dirIndex = bufferSize;
+    
+    if (numImages > (i + dirIndex)) {
+        loader.loadFromDisk(images[i % bufferSize], dirImg.getPath(i + dirIndex));
+        // imageBuffer.loadImage(dirImg.getPath(i));
     }
     
 }
@@ -285,7 +302,7 @@ void ofApp::draw() {
         
         if ( frameNum == ofToInt( dirImg.getName( imagesIndex ) ) ) {
             frameIndex = imagesIndex;
-            dynamicLoading(imagesIndex);
+            imageLoading(imagesIndex);
             applyFilter();
             imagesIndex++;
         }

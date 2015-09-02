@@ -44,9 +44,13 @@ public:
     
     // use threadedImageloader for improved loading performance
     ofxThreadedImageLoader loader;
-    void dynamicLoading(int i);
+    void imageLoading(int i, bool init = false);
+    vector<ofImage> images;
     ofImage imageBuffer;
     string imageFolder;
+    int numImages;
+    int bufferSize;
+    
     
     // for video recording
     void setupVideoRecording();
