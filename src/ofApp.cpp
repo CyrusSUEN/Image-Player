@@ -236,9 +236,7 @@ void ofApp::writeSrtFile(const stringstream& ss, bool init) {
 }
 
 void ofApp::applyFilter() {
-    int w = imageBuffer.getWidth();
-    int h = imageBuffer.getHeight();
-    
+    // set the tint color
     ofColor filterColor = ofColor::green;
     
     for(auto line: imageBuffer.getPixels().getLines()){
