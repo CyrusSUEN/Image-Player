@@ -222,16 +222,14 @@ void ofApp::getElapsedTime(stringstream& ss, float offsetF, float offsetM) {
 void ofApp::writeSrtFile(const stringstream& ss, bool init) {
     
     if (init) {
-        
-        cout << "Rewrite srt file" << endl;
         ofstream fout;
-        fout.open(ofToDataPath(imageFolder + ".srt").c_str(), ofstream::out | ofstream::trunc);
+        fout.open(ofToDataPath(imageFolder + ".srt").c_str(), ios::out | ios::trunc);
         fout.close();
     }
     else {
         ofstream fout;
-        fout.open(ofToDataPath(imageFolder + ".srt").c_str());
-        fout.seekp(0, ios::end); // start writing at the end
+        fout.open(ofToDataPath(imageFolder + ".srt").c_str(), ios::out | ios::in);
+        fout.seekp(0, ios::end); // start writing at the end; requires ios::in for seeking EOL
         fout << ss.str();
         fout.close();
     }
