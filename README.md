@@ -17,3 +17,6 @@ then download and install from the [installer](https://github.com/pje/WavTap/rel
 Make sure that WavTap is running in the background
 
 and Option + Click the speaker icon to check that WavTap is the selected Output Device
+
+Requires openframeworks 0.9
+http://forum.openframeworks.cc/t/0-9-0-release-candidate-1/20434
