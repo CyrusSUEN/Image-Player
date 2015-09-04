@@ -77,9 +77,14 @@ void ofApp::setupVideoRecording() {
     vidRecorder.setAudioCodec("mp3");
     vidRecorder.setAudioBitrate("192k");
     
-    // soundStream.listDevices();
-    cout << soundStream.getDeviceList();
-    soundStream.setDeviceID(2);
+    // set wavTap as the sound input source
+    for (auto i : soundStream.getDeviceList()) {
+        if (i.name == "WavTap: WavTap") {
+            soundStream.setDeviceID(i.deviceID);
+            break;
+        }
+    }
+    
     sampleRate = 44100;
     channels = 2;
     soundStream.setup(this, 0, channels, sampleRate, 256, 4);
