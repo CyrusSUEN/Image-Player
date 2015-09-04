@@ -9,7 +9,7 @@ void ofApp::setup() {
     ofSetWindowTitle("Image Player");
     
     // load sound
-    vocal.loadSound("sound/audio.mp3");
+    vocal.load("sound/audio.mp3");
     
     dirImg.allowExt("jpg");
     imageFolder = "frames_";
@@ -31,7 +31,7 @@ void ofApp::setup() {
     if (json.open("phraseCounts.json"))
         ; // ofLogNotice("ofApp::setup") << json.getRawString();
     
-    showDebuggingInfo = false;
+    showDebuggingInfo = true;
     startPlayback = true;
     
     sequenceFPS = 30;
@@ -77,7 +77,8 @@ void ofApp::setupVideoRecording() {
     vidRecorder.setAudioCodec("mp3");
     vidRecorder.setAudioBitrate("192k");
     
-    soundStream.listDevices();
+    // soundStream.listDevices();
+    cout << soundStream.getDeviceList();
     soundStream.setDeviceID(2);
     sampleRate = 44100;
     channels = 2;
@@ -97,22 +98,16 @@ void ofApp::imageLoading(int i, bool init) {
     if (numImages > (i + dirIndex)) {
         loader.loadFromDisk(images[i % bufferSize], dirImg.getPath(i + dirIndex));
         // imageBuffer.loadImage(dirImg.getPath(i));
+        
+        /*
+        images[i % bufferSize] = ofImage();
+        images[i % bufferSize].load(dirImg.getPath(i));
+        imageBuffer = images[(i) % bufferSize];
+         */
+        
+        //applyFilter();
     }
     
-}
-
-void ofApp::loadFilers() {
-    // load filters
-    dirLut.allowExt("cube");
-    dirLut.listDir("LUTs/");
-    dirLut.sort();
-    if (dirLut.size() > 0) {
-        dirLoadIndex = 0;
-        loadLUT(dirLut.getPath(dirLoadIndex));
-        doLUT = true;
-    }else{
-        doLUT = false;
-    }
 }
 
 void ofApp::displaySubtitle(int frameNum, int x, int y) {
@@ -241,33 +236,14 @@ void ofApp::applyFilter() {
     int w = imageBuffer.getWidth();
     int h = imageBuffer.getHeight();
     
-    int channelCount = imageBuffer.getPixelsRef().getNumChannels();
+    ofColor filterColor = ofColor::green;
     
-    for (int y = 0; y < h; y++) {
-        
-        unsigned char * cursor = imageBuffer.getPixels() + ((w * channelCount) * y);
-        
-        for (int x = 0; x < w - 1; x++) {
-            
-            double tintPercentage = .25;
-            ofColor filterColor = ofColor::green;
-            
-            // cout << "Before: " << cursor[0] << " " << cursor[1] << " " << cursor[2] << endl;
-            
-            int a0 = cursor[0];
-            int a1 = cursor[1];
-            int a2 = cursor[2];
-            
-            cursor[0] = cursor[0] + (tintPercentage * (filterColor.r - cursor[0]));
-            cursor[1] = cursor[1] + (tintPercentage * (filterColor.g - cursor[1]));
-            cursor[2] = cursor[2] + (tintPercentage * (filterColor.b - cursor[2]));
-            
-            // cout << "After: " << cursor[0] << " " << cursor[1] << " " << cursor[2] << endl;
-            
-            int b0 = cursor[0];
-            int b1 = cursor[1];
-            int b2 = cursor[2];
-            cursor += channelCount;
+    for(auto line: imageBuffer.getPixels().getLines()){
+        for(auto pixel: line.getPixels()){
+            float tintPercentage = .25;
+            pixel[0] = pixel[0] + (tintPercentage * (filterColor.r - pixel[0]));
+            pixel[1] = pixel[1] + (tintPercentage * (filterColor.g - pixel[1]));
+            pixel[2] = pixel[2] + (tintPercentage * (filterColor.b - pixel[2]));
         }
     }
     imageBuffer.update();
@@ -378,62 +354,6 @@ void ofApp::audioIn(float *input, int bufferSize, int nChannels){
 }
 
 //--------------------------------------------------------------
-void ofApp::loadLUT(string path){
-    LUTloaded = false;
-    
-    ofFile file(path);
-    string line;
-    for(int i = 0; i < 5; i++) {
-        getline(file, line);
-        ofLog() << "Skipped line: " << line;
-    }
-    for(int z=0; z<32; z++){
-        for(int y=0; y<32; y++){
-            for(int x=0; x<32; x++){
-                ofVec3f cur;
-                file >> cur.x >> cur.y >> cur.z;
-                lut[x][y][z] = cur;
-            }
-        }
-    }
-    
-    LUTloaded = true;
-}
-
-//--------------------------------------------------------------
-void ofApp::applyLUT(ofPixelsRef pix){
-    if (LUTloaded) {
-        
-        for(int y = 0; y < pix.getHeight(); y++){
-            for(int x = 0; x < pix.getWidth(); x++){
-                
-                ofColor color = pix.getColor(x, y);
-                
-                int lutPos [3];
-                for (int m=0; m<3; m++) {
-                    lutPos[m] = color[m] / 8;
-                    if (lutPos[m]==31) {
-                        lutPos[m]=30;
-                    }
-                }
-                
-                ofVec3f start = lut[lutPos[0]][lutPos[1]][lutPos[2]];
-                ofVec3f end = lut[lutPos[0]+1][lutPos[1]+1][lutPos[2]+1];
-                
-                for (int k=0; k<3; k++) {
-                    float amount = (color[k] % 8) / 8.0f;
-                    color[k]= (start[k] + amount * (end[k] - start[k])) * 255;
-                }
-                
-                imageBuffer.setColor(x, y, color);
-            }			
-        }
-        
-        imageBuffer.update();
-    }
-}
-
-//--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     if (key == ' ') {
         if (meetsFPSrequirement.empty())
@@ -455,20 +375,6 @@ void ofApp::keyPressed(int key){
     }
     if (key == 'j'){
         frameNum = 10000;
-    }
-    if (key == OF_KEY_UP){
-        dirLoadIndex++;
-        if (dirLoadIndex >= (int)dirLut.size()) {
-            dirLoadIndex = 0;
-        }
-        loadLUT(dirLut.getPath(dirLoadIndex));
-    }
-    if (key == OF_KEY_DOWN) {
-        dirLoadIndex--;
-        if (dirLoadIndex < 0) {
-            dirLoadIndex = dirLut.size()-1;
-        }
-        loadLUT(dirLut.getPath(dirLoadIndex));
     }
 }
 

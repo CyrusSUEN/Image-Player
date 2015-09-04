@@ -64,14 +64,7 @@ public:
     string fileExt;
     
     // image filters
-    void loadFilers();
-    ofDirectory dirLut;
-    bool doLUT;
     int dirLoadIndex;
-    bool LUTloaded;
-    ofVec3f lut[32][32][32];
-    void loadLUT(string path);
-    void applyLUT(ofPixelsRef pix);
     void applyFilter();
     
     // json
