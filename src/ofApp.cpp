@@ -59,7 +59,8 @@ void ofApp::setup() {
     frameNum = -1 - startingBufferFrameNum;
     
     // set up video recording
-    setupVideoRecording();
+    if (numImages) // check if there are images
+        setupVideoRecording();
 }
 
 void ofApp::exit() {
